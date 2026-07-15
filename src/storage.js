@@ -5,7 +5,7 @@ import {
   STARTER_DATA_VERSION,
   STARTER_V2_SPOOLS,
   STARTER_V4_SPOOLS,
-} from "./catalog.js?v=0.3.2";
+} from "./catalog.js";
 
 const STORAGE_KEY = "spool-inventory.local.v1";
 const PACKAGED_INVENTORY_URL = "./data/inventory.json?v=0.3.2";

@@ -8,7 +8,7 @@ import {
   resetInventory,
   resetToPackagedInventory,
   saveInventory,
-} from "./storage.js?v=0.3.2";
+} from "./storage.js";
 
 const STATUS_ORDER = [
   "Needs audit",
