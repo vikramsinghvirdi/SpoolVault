@@ -7,7 +7,8 @@ import {
   STARTER_V4_SPOOLS,
 } from "./catalog.js";
 
-const STORAGE_KEY = "spool-inventory.local.v1";
+const STORAGE_KEY = "spoolvault.local.v1";
+const LEGACY_STORAGE_KEYS = ["spool-inventory.local.v1"];
 const PACKAGED_INVENTORY_URL = "./data/inventory.json?v=0.3.2";
 
 function deepClone(value) {
@@ -338,7 +339,8 @@ export async function loadInventory({
       return saveInventory(packaged);
     }
 
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(STORAGE_KEY)
+      || LEGACY_STORAGE_KEYS.map((key) => localStorage.getItem(key)).find(Boolean);
     if (!saved) {
       const initial = deepClone(packaged);
       saveInventory(initial);

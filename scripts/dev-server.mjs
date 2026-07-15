@@ -52,7 +52,7 @@ const server = createServer((request, response) => {
 server.on("error", (error) => {
   if (error?.code === "EADDRINUSE") {
     console.error(
-      `Port ${port} is already in use. Stop the older Spool Inventory server with Ctrl+C, then run npm run dev again.`,
+      `Port ${port} is already in use. Stop the older SpoolVault server with Ctrl+C, then run npm run dev again.`,
     );
     process.exit(1);
   }
@@ -60,5 +60,5 @@ server.on("error", (error) => {
 });
 
 server.listen(port, "127.0.0.1", () => {
-  console.log(`Spool Inventory is running at http://127.0.0.1:${port}`);
+  console.log(`SpoolVault is running at http://127.0.0.1:${port}`);
 });

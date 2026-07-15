@@ -1,4 +1,4 @@
-# Spool Inventory Starter 0.3.2
+# SpoolVault 0.3.2
 
 A dependency-free, local-first web app for tracking 3D-printer filament spools across any brand. It runs locally with Node.js and keeps a clean path toward a hosted Vercel + Supabase version later.
 
@@ -62,7 +62,7 @@ All imported items start as **Needs audit** because an order history cannot prov
 3. Extract this folder and run:
 
 ```bash
-cd filament-inventory-starter-v2.1
+cd SpoolVault
 npm run dev
 ```
 
@@ -128,7 +128,7 @@ npm test
 Inventory is stored under this browser key:
 
 ```text
-spool-inventory.local.v1
+spoolvault.local.v1
 ```
 
 Clearing site data removes the local inventory. Use **Data → Export backup (.json)** regularly. JSON import replaces the current inventory only after confirmation.

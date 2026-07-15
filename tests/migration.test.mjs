@@ -41,7 +41,7 @@ const {
   loadInventory,
 } = await import("../src/storage.js");
 
-const KEY = "spool-inventory.local.v1";
+const KEY = "spoolvault.local.v1";
 
 function legacyInventory(starterDataVersion) {
   return {

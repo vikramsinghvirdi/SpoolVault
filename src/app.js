@@ -1466,7 +1466,7 @@ function downloadText(filename, text, mimeType) {
 function exportJson() {
   const date = new Date().toISOString().slice(0, 10);
   downloadText(
-    `spool-inventory-backup-${date}.json`,
+    `spoolvault-backup-${date}.json`,
     JSON.stringify(inventory, null, 2),
     "application/json",
   );
@@ -1505,7 +1505,7 @@ function exportCsv() {
     ...inventory.spools.map((spool) => headers.map((key) => csvCell(spool[key])).join(",")),
   ];
   const date = new Date().toISOString().slice(0, 10);
-  downloadText(`spool-inventory-${date}.csv`, lines.join("\n"), "text/csv;charset=utf-8");
+  downloadText(`spoolvault-${date}.csv`, lines.join("\n"), "text/csv;charset=utf-8");
   showToast("CSV spool list exported.");
 }
 
@@ -1759,7 +1759,7 @@ function bindEvents() {
   });
 
   window.addEventListener("storage", async (event) => {
-    if (!event.key?.startsWith("spool-inventory")) return;
+    if (!event.key?.startsWith("spoolvault") && !event.key?.startsWith("spool-inventory")) return;
     inventory = await loadInventory();
     populateOptions();
     applyTheme();
