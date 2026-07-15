@@ -1580,13 +1580,13 @@ async function handleGlobalAction(action) {
       if (result.addedCount > 0) {
         persist({ optionsChanged: true });
         showToast(
-          `Added ${result.addedCount} missing spool${result.addedCount === 1 ? "" : "s"} from the July 13 purchase.`,
+          `Added ${result.addedCount} missing spool${result.addedCount === 1 ? "" : "s"} from the July 15 purchase.`,
           "+",
         );
       } else {
         inventory = saveInventory(inventory);
         renderAll({ optionsChanged: true });
-        showToast(`All ${result.expectedCount} July 13 purchase spools are already present.`, "✓");
+        showToast(`All ${result.expectedCount} July 15 purchase spools are already present.`, "✓");
       }
       break;
     }

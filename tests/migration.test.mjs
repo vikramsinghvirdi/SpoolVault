@@ -32,6 +32,7 @@ const {
   INITIAL_SEED_SPOOLS,
   JULY_12_PURCHASE_MIGRATION_ID,
   JULY_13_PURCHASE_MIGRATION_ID,
+  JULY_15_PURCHASE_MIGRATION_ID,
   SEED_SPOOLS,
   STARTER_V2_SPOOLS,
 } = await import("../src/catalog.js");
@@ -84,17 +85,19 @@ function july12Inventory() {
   };
 }
 
-test("migrates the original 36-spool inventory to 56 spools", async () => {
+test("migrates the original 36-spool inventory to 64 spools", async () => {
   localStorage.clear();
   localStorage.setItem(KEY, JSON.stringify(legacyInventory(undefined)));
 
   const inventory = await loadInventory();
-  assert.equal(inventory.spools.length, 56);
+  assert.equal(inventory.spools.length, 64);
   assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v2-")).length, 10);
   assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v4-")).length, 10);
-  assert.equal(inventory.starterDataVersion, 5);
+  assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v6-")).length, 8);
+  assert.equal(inventory.starterDataVersion, 6);
   assert.ok(inventory.appliedMigrations.includes(JULY_12_PURCHASE_MIGRATION_ID));
   assert.ok(inventory.appliedMigrations.includes(JULY_13_PURCHASE_MIGRATION_ID));
+  assert.ok(inventory.appliedMigrations.includes(JULY_15_PURCHASE_MIGRATION_ID));
 });
 
 test("repairs a v0.2 marker even when the ten records are missing", async () => {
@@ -102,23 +105,26 @@ test("repairs a v0.2 marker even when the ten records are missing", async () => 
   localStorage.setItem(KEY, JSON.stringify(legacyInventory(2)));
 
   const inventory = await loadInventory();
-  assert.equal(inventory.spools.length, 56);
+  assert.equal(inventory.spools.length, 64);
   assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v2-")).length, 10);
   assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v4-")).length, 10);
-  assert.equal(inventory.starterDataVersion, 5);
+  assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v6-")).length, 8);
+  assert.equal(inventory.starterDataVersion, 6);
 });
 
-test("migrates the 46-spool July 12 inventory to 56 spools", async () => {
+test("migrates the 46-spool July 12 inventory to 64 spools", async () => {
   localStorage.clear();
   localStorage.setItem(KEY, JSON.stringify(july12Inventory()));
 
   const inventory = await loadInventory();
-  assert.equal(inventory.spools.length, 56);
+  assert.equal(inventory.spools.length, 64);
   assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v2-")).length, 10);
   assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v4-")).length, 10);
-  assert.equal(inventory.starterDataVersion, 5);
+  assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v6-")).length, 8);
+  assert.equal(inventory.starterDataVersion, 6);
   assert.ok(inventory.appliedMigrations.includes(JULY_12_PURCHASE_MIGRATION_ID));
   assert.ok(inventory.appliedMigrations.includes(JULY_13_PURCHASE_MIGRATION_ID));
+  assert.ok(inventory.appliedMigrations.includes(JULY_15_PURCHASE_MIGRATION_ID));
 });
 
 test("repairs a v0.3 marker even when the July 13 records are missing", async () => {
@@ -134,10 +140,12 @@ test("repairs a v0.3 marker even when the July 13 records are missing", async ()
   localStorage.setItem(KEY, JSON.stringify(incompleteV4));
 
   const inventory = await loadInventory();
-  assert.equal(inventory.spools.length, 56);
+  assert.equal(inventory.spools.length, 64);
   assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v4-")).length, 10);
-  assert.equal(inventory.starterDataVersion, 5);
+  assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v6-")).length, 8);
+  assert.equal(inventory.starterDataVersion, 6);
   assert.ok(inventory.appliedMigrations.includes(JULY_13_PURCHASE_MIGRATION_ID));
+  assert.ok(inventory.appliedMigrations.includes(JULY_15_PURCHASE_MIGRATION_ID));
 });
 
 test("merges missing records from packaged inventory json", async () => {
@@ -154,17 +162,19 @@ test("merges missing records from packaged inventory json", async () => {
   const inventory = await loadInventory({
     packagedInventory: {
       ...july12Inventory(),
-      starterDataVersion: 5,
+      starterDataVersion: 6,
       spools: structuredClone(SEED_SPOOLS),
       appliedMigrations: [
         JULY_12_PURCHASE_MIGRATION_ID,
         JULY_13_PURCHASE_MIGRATION_ID,
+        JULY_15_PURCHASE_MIGRATION_ID,
       ],
     },
   });
 
-  assert.equal(inventory.spools.length, 56);
+  assert.equal(inventory.spools.length, 64);
   assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v4-")).length, 10);
+  assert.equal(inventory.spools.filter((spool) => spool.id.startsWith("seed-v6-")).length, 8);
   assert.equal(inventory.events[0].id, "packaged-inventory-repair");
 });
 
@@ -178,10 +188,10 @@ test("manual July 12 repair is idempotent", async () => {
 
   assert.equal(first.addedCount, 0);
   assert.equal(second.addedCount, 0);
-  assert.equal(second.inventory.spools.length, 56);
+  assert.equal(second.inventory.spools.length, 64);
 });
 
-test("manual July 13 repair is idempotent", async () => {
+test("manual July 15 repair is idempotent", async () => {
   localStorage.clear();
   localStorage.setItem(KEY, JSON.stringify(july12Inventory()));
   const inventory = await loadInventory();
@@ -191,7 +201,7 @@ test("manual July 13 repair is idempotent", async () => {
 
   assert.equal(first.addedCount, 0);
   assert.equal(second.addedCount, 0);
-  assert.equal(second.inventory.spools.length, 56);
+  assert.equal(second.inventory.spools.length, 64);
 });
 
 test("does not inject personal starter purchases into unrelated custom data", async () => {

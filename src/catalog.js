@@ -634,9 +634,109 @@ const july13Products = [
   },
 ];
 
-export const STARTER_DATA_VERSION = 5;
+const july15Products = [
+  {
+    brand: "Bambu Lab",
+    productLine: "PLA Matte",
+    materialFamily: "PLA",
+    colorName: "Matte Caramel",
+    colorFamily: "Brown",
+    colorHex: "#C99762",
+    sku: "11803",
+    packaging: "Refill",
+    initialWeightG: 1000,
+    count: 1,
+  },
+  {
+    brand: "Bambu Lab",
+    productLine: "PLA Basic",
+    materialFamily: "PLA",
+    colorName: "Cobalt Blue",
+    colorFamily: "Blue",
+    colorHex: "#1F6BCB",
+    sku: "10604",
+    packaging: "Refill",
+    initialWeightG: 1000,
+    count: 1,
+  },
+  {
+    brand: "Bambu Lab",
+    productLine: "PLA Basic",
+    materialFamily: "PLA",
+    colorName: "Bronze",
+    colorFamily: "Brown",
+    colorHex: "#5A4935",
+    sku: "10801",
+    packaging: "Refill",
+    initialWeightG: 1000,
+    count: 1,
+  },
+  {
+    brand: "Bambu Lab",
+    productLine: "PLA Basic",
+    materialFamily: "PLA",
+    colorName: "Purple",
+    colorFamily: "Purple",
+    colorHex: "#7652C9",
+    sku: "10700",
+    packaging: "Refill",
+    initialWeightG: 1000,
+    count: 1,
+  },
+  {
+    brand: "Bambu Lab",
+    productLine: "PETG HF",
+    materialFamily: "PETG",
+    colorName: "Black",
+    colorFamily: "Black",
+    colorHex: "#151718",
+    sku: "33102",
+    packaging: "Refill",
+    initialWeightG: 1000,
+    count: 1,
+  },
+  {
+    brand: "Bambu Lab",
+    productLine: "PLA Matte",
+    materialFamily: "PLA",
+    colorName: "Matte Marine Blue",
+    colorFamily: "Blue",
+    colorHex: "#266A9D",
+    sku: "11600",
+    packaging: "Refill",
+    initialWeightG: 1000,
+    count: 1,
+  },
+  {
+    brand: "Bambu Lab",
+    productLine: "PLA Matte",
+    materialFamily: "PLA",
+    colorName: "Matte Latte Brown",
+    colorFamily: "Brown",
+    colorHex: "#A58D7C",
+    sku: "11800",
+    packaging: "Refill",
+    initialWeightG: 1000,
+    count: 1,
+  },
+  {
+    brand: "Bambu Lab",
+    productLine: "PLA Matte",
+    materialFamily: "PLA",
+    colorName: "Matte Dark Blue",
+    colorFamily: "Blue",
+    colorHex: "#243B59",
+    sku: "11602",
+    packaging: "Refill",
+    initialWeightG: 1000,
+    count: 1,
+  },
+];
+
+export const STARTER_DATA_VERSION = 6;
 export const JULY_12_PURCHASE_MIGRATION_ID = "starter-purchase-2026-07-12-bambu-10";
 export const JULY_13_PURCHASE_MIGRATION_ID = "starter-purchase-2026-07-13-bambu-10";
+export const JULY_15_PURCHASE_MIGRATION_ID = "starter-purchase-2026-07-15-bambu-8";
 
 function makeSeedSpools(
   productList,
@@ -694,10 +794,17 @@ export const STARTER_V4_SPOOLS = makeSeedSpools(july13Products, {
   note: "Imported from the Bambu Lab purchase screenshot supplied on 2026-07-13. Confirm that this spool or refill is still on hand.",
 });
 
+export const STARTER_V6_SPOOLS = makeSeedSpools(july15Products, {
+  purchasedAt: "2026-07-15T19:41:00.000Z",
+  idPrefix: "seed-v6",
+  note: "Imported from the Bambu Lab purchase screenshot supplied on 2026-07-15. Confirm that this spool or refill is still on hand.",
+});
+
 export const SEED_SPOOLS = [
   ...INITIAL_SEED_SPOOLS,
   ...STARTER_V2_SPOOLS,
   ...STARTER_V4_SPOOLS,
+  ...STARTER_V6_SPOOLS,
 ];
 
 export const DEFAULT_INVENTORY = {
@@ -706,6 +813,7 @@ export const DEFAULT_INVENTORY = {
   appliedMigrations: [
     JULY_12_PURCHASE_MIGRATION_ID,
     JULY_13_PURCHASE_MIGRATION_ID,
+    JULY_15_PURCHASE_MIGRATION_ID,
   ],
   spools: SEED_SPOOLS,
   events: [
@@ -726,6 +834,12 @@ export const DEFAULT_INVENTORY = {
       type: "import",
       message: "Added 10 purchased spools from the Bambu Lab order screenshot supplied on 2026-07-13.",
       createdAt: "2026-07-13T17:10:00.000Z",
+    },
+    {
+      id: "seed-event-4",
+      type: "import",
+      message: "Added 8 purchased filament refills from the Bambu Lab order screenshot supplied on 2026-07-15.",
+      createdAt: "2026-07-15T19:43:00.000Z",
     },
   ],
   settings: {

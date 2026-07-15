@@ -2,9 +2,11 @@ import {
   DEFAULT_INVENTORY,
   JULY_12_PURCHASE_MIGRATION_ID,
   JULY_13_PURCHASE_MIGRATION_ID,
+  JULY_15_PURCHASE_MIGRATION_ID,
   STARTER_DATA_VERSION,
   STARTER_V2_SPOOLS,
   STARTER_V4_SPOOLS,
+  STARTER_V6_SPOOLS,
 } from "./catalog.js";
 
 const STORAGE_KEY = "spoolvault.local.v1";
@@ -156,8 +158,12 @@ function addMissingJulyPurchaseSpools(inventory) {
   return addMissingSpools(inventory, STARTER_V2_SPOOLS);
 }
 
-function addMissingLatestPurchaseSpools(inventory) {
+function addMissingJuly13PurchaseSpools(inventory) {
   return addMissingSpools(inventory, STARTER_V4_SPOOLS);
+}
+
+function addMissingLatestPurchaseSpools(inventory) {
+  return addMissingSpools(inventory, STARTER_V6_SPOOLS);
 }
 
 function markMigrationApplied(inventory, migrationId) {
@@ -171,7 +177,7 @@ function markJulyPurchaseApplied(inventory) {
 }
 
 function markLatestPurchaseApplied(inventory) {
-  markMigrationApplied(inventory, JULY_13_PURCHASE_MIGRATION_ID);
+  markMigrationApplied(inventory, JULY_15_PURCHASE_MIGRATION_ID);
 }
 
 function addPurchaseEvent(
@@ -214,9 +220,9 @@ function addLatestPurchaseEvent(inventory, addedCount, source = "automatic migra
   addPurchaseEvent(inventory, {
     addedCount,
     source,
-    automaticEventId: "seed-event-3",
-    repairEventPrefix: "repair-event-july-13",
-    dateLabel: "July 13",
+    automaticEventId: "seed-event-4",
+    repairEventPrefix: "repair-event-july-15",
+    dateLabel: "July 15",
   });
 }
 
@@ -241,6 +247,17 @@ function migrateStarterInventory(inventory) {
   // tab had not received the final July 13 purchase records. Version 5 repairs
   // by stable spool IDs, so an incomplete v4 localStorage snapshot reaches 56.
   if (migrated.starterDataVersion < 5) {
+    const addedCount = addMissingJuly13PurchaseSpools(migrated);
+    addPurchaseEvent(migrated, {
+      addedCount,
+      automaticEventId: "seed-event-3",
+      repairEventPrefix: "repair-event-july-13",
+      dateLabel: "July 13",
+    });
+    markMigrationApplied(migrated, JULY_13_PURCHASE_MIGRATION_ID);
+  }
+
+  if (migrated.starterDataVersion < 6) {
     const addedCount = addMissingLatestPurchaseSpools(migrated);
     addLatestPurchaseEvent(migrated, addedCount);
     markLatestPurchaseApplied(migrated);
@@ -311,7 +328,7 @@ export function applyJulyPurchaseUpdate(inventory) {
 }
 
 /**
- * Manually adds only the missing July 13 purchase records from the latest
+ * Manually adds only the missing July 15 purchase records from the latest
  * screenshot. Stable IDs keep this repair idempotent.
  */
 export function applyLatestPurchaseUpdate(inventory) {
@@ -324,7 +341,7 @@ export function applyLatestPurchaseUpdate(inventory) {
   return {
     inventory: updated,
     addedCount,
-    expectedCount: STARTER_V4_SPOOLS.length,
+    expectedCount: STARTER_V6_SPOOLS.length,
   };
 }
 
