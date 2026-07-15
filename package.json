@@ -1,0 +1,12 @@
+{
+  "name": "spool-inventory-starter",
+  "version": "0.3.2",
+  "private": true,
+  "type": "module",
+  "description": "A dependency-free, local-first inventory manager for 3D-printer filament spools.",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

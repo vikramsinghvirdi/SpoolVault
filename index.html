@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A local-first inventory manager for 3D printer filament spools."
+    />
+    <title>Spool Inventory</title>
+    <link rel="icon" href="./favicon.svg?v=0.3.2" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css?v=0.3.2" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand-mark" href="#top" aria-label="Spool Inventory home">
+          <span class="brand-icon" aria-hidden="true"><span></span></span>
+          <span>
+            <strong>Spool Inventory</strong>
+            <small>Local-first filament tracking</small>
+          </span>
+        </a>
+
+        <div class="topbar-actions">
+          <button
+            class="icon-button"
+            id="themeButton"
+            type="button"
+            aria-label="Change color theme"
+            title="Change color theme"
+          ><span aria-hidden="true">◐</span></button>
+
+          <details class="data-menu">
+            <summary class="button secondary">Data</summary>
+            <div class="menu-popover">
+              <button type="button" data-global-action="export-json">Export backup (.json)</button>
+              <button type="button" data-global-action="export-csv">Export spool list (.csv)</button>
+              <button type="button" data-global-action="import-json">Import backup</button>
+              <button type="button" data-global-action="reload-packaged-inventory">Reload packaged inventory.json</button>
+              <button type="button" data-global-action="sync-july-purchase">Add/repair July 12 purchase (10 spools)</button>
+              <button type="button" data-global-action="sync-latest-purchase">Add/repair July 13 purchase (10 spools)</button>
+              <div class="menu-divider"></div>
+              <button class="danger-text" type="button" data-global-action="reset-demo">Reset starter data</button>
+            </div>
+          </details>
+
+          <button class="button primary" id="addSpoolButton" type="button">
+            <span aria-hidden="true">＋</span> Add spool
+          </button>
+        </div>
+      </header>
+
+      <main id="top">
+        <section class="page-heading" aria-labelledby="pageTitle">
+          <div>
+            <p class="eyebrow">Inventory overview</p>
+            <h1 id="pageTitle">Know what filament you have before you order more.</h1>
+            <p class="page-intro">
+              Track individual spools, group duplicate products, record remaining weight,
+              and keep a product URL or SKU for future reorders.
+            </p>
+          </div>
+          <div class="local-status" title="Your data stays in this browser until you export or sync it.">
+            <span class="status-dot" aria-hidden="true"></span>
+            Saved in this browser
+            <span class="app-version" title="Application version">v0.3.2</span>
+          </div>
+        </section>
+
+        <section class="summary-grid" id="summaryGrid" aria-label="Inventory summary"></section>
+
+        <section class="inventory-panel" aria-labelledby="inventoryHeading">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Catalog</p>
+              <h2 id="inventoryHeading">Filament inventory</h2>
+            </div>
+            <div class="segmented" aria-label="Inventory level">
+              <button type="button" data-view-mode="products">Products</button>
+              <button type="button" data-view-mode="spools">Individual spools</button>
+            </div>
+          </div>
+
+          <div class="search-row">
+            <label class="search-box" for="searchInput">
+              <span aria-hidden="true">⌕</span>
+              <input
+                id="searchInput"
+                type="search"
+                autocomplete="off"
+                placeholder="Search color, type, brand, SKU, location…"
+              />
+              <button
+                id="clearSearchButton"
+                class="clear-search"
+                type="button"
+                aria-label="Clear search"
+                title="Clear search"
+              >×</button>
+            </label>
+            <button class="button secondary filter-toggle" id="filterToggle" type="button">
+              Filters <span id="filterCountBadge" class="mini-count" hidden>0</span>
+            </button>
+          </div>
+
+          <p class="search-help">
+            Search everything, or use field terms such as
+            <code>type:PETG</code>, <code>color:black</code>,
+            <code>status:open</code>, <code>sku:30105</code>, and
+            <code>location:AMS</code>.
+          </p>
+
+          <div class="quick-filters" id="quickFilters" aria-label="Quick filters">
+            <button type="button" data-quick-filter="all">All</button>
+            <button type="button" data-quick-filter="audit">Needs audit</button>
+            <button type="button" data-quick-filter="low">Low stock</button>
+            <button type="button" data-quick-filter="active">Open or loaded</button>
+            <button type="button" data-quick-filter="sealed">Sealed</button>
+          </div>
+
+          <div class="filters-panel" id="filtersPanel" hidden>
+            <div class="filter-grid">
+              <label><span>Brand</span><select id="brandFilter"></select></label>
+              <label><span>Material family</span><select id="materialFilter"></select></label>
+              <label><span>Type / product line</span><select id="typeFilter"></select></label>
+              <label><span>Color family</span><select id="colorFilter"></select></label>
+              <label><span>Status</span><select id="statusFilter"></select></label>
+              <label><span>Packaging</span><select id="packagingFilter"></select></label>
+              <label><span>Location</span><select id="locationFilter"></select></label>
+              <label>
+                <span>Stock level</span>
+                <select id="stockFilter">
+                  <option value="">Any stock level</option>
+                  <option value="full">Nearly full (90%+)</option>
+                  <option value="in-use">Partly used</option>
+                  <option value="low">At or below reorder level</option>
+                  <option value="empty">Empty</option>
+                  <option value="needs-audit">Needs physical audit</option>
+                </select>
+              </label>
+              <label>
+                <span>Product reference</span>
+                <select id="linkFilter">
+                  <option value="">With or without a link</option>
+                  <option value="has-link">Has product URL</option>
+                  <option value="no-link">Missing product URL</option>
+                  <option value="has-sku">Has SKU</option>
+                  <option value="no-sku">Missing SKU</option>
+                </select>
+              </label>
+            </div>
+            <div class="filter-actions">
+              <button class="button ghost" id="resetFiltersButton" type="button">Clear filters</button>
+            </div>
+          </div>
+
+          <div class="active-filter-row" id="activeFilters" aria-live="polite"></div>
+
+          <div class="result-toolbar">
+            <p id="resultCount" aria-live="polite"></p>
+            <div class="result-controls">
+              <label class="sort-control">
+                <span>Sort</span>
+                <select id="sortSelect">
+                  <option value="updated-desc">Recently updated</option>
+                  <option value="added-desc">Recently added</option>
+                  <option value="color-spectrum">Color spectrum</option>
+                  <option value="color-asc">Color name A–Z</option>
+                  <option value="type-asc">Type A–Z</option>
+                  <option value="brand-asc">Brand A–Z</option>
+                  <option value="remaining-asc">Remaining: low to high</option>
+                  <option value="remaining-desc">Remaining: high to low</option>
+                  <option value="percent-asc">Percent remaining: low to high</option>
+                  <option value="quantity-desc">Quantity: high to low</option>
+                  <option value="status-asc">Status</option>
+                  <option value="sku-asc">SKU</option>
+                </select>
+              </label>
+              <div class="segmented compact" aria-label="Display style">
+                <button type="button" data-display-mode="cards" title="Card view">Cards</button>
+                <button type="button" data-display-mode="table" title="Table view">Table</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="inventoryContent"></div>
+        </section>
+
+        <section class="activity-panel" aria-labelledby="activityHeading">
+          <div class="panel-heading compact-heading">
+            <div>
+              <p class="eyebrow">History</p>
+              <h2 id="activityHeading">Recent activity</h2>
+            </div>
+            <span class="muted-note">Latest 8 events</span>
+          </div>
+          <div id="activityList" class="activity-list"></div>
+        </section>
+      </main>
+
+      <footer>
+        <p>
+          Version 0.3.2 · reads <code>data/inventory.json</code> · browser edits are saved in <code>localStorage</code>.
+        </p>
+      </footer>
+    </div>
+
+    <dialog id="spoolDialog" class="modal">
+      <form id="spoolForm" method="dialog">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow" id="spoolDialogEyebrow">Inventory item</p>
+            <h2 id="spoolDialogTitle">Add spool</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog="spoolDialog" aria-label="Close">×</button>
+        </div>
+
+        <input type="hidden" id="spoolId" name="spoolId" />
+
+        <div class="form-section">
+          <div class="section-title">
+            <h3>Product identity</h3>
+            <p>These fields make filtering and reordering useful across any brand.</p>
+          </div>
+          <div class="form-grid two-column">
+            <label>
+              <span>Brand <strong aria-hidden="true">*</strong></span>
+              <input id="brandInput" name="brand" list="brandSuggestions" required placeholder="e.g. Bambu Lab, Polymaker" />
+            </label>
+            <label>
+              <span>Type / product line <strong aria-hidden="true">*</strong></span>
+              <input id="productLineInput" name="productLine" list="typeSuggestions" required placeholder="e.g. PLA Matte" />
+            </label>
+            <label>
+              <span>Material family <strong aria-hidden="true">*</strong></span>
+              <input id="materialInput" name="materialFamily" list="materialSuggestions" required placeholder="e.g. PLA, PETG, ASA" />
+            </label>
+            <label>
+              <span>SKU or product code</span>
+              <input id="skuInput" name="sku" placeholder="e.g. 11101" />
+            </label>
+            <label class="full-width">
+              <span>Product URL</span>
+              <div class="input-with-button">
+                <input id="productUrlInput" name="productUrl" type="url" placeholder="https://…" />
+                <button class="button secondary" id="lookupButton" type="button">Search web</button>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-title">
+            <h3>Color</h3>
+            <p>Use the family for filtering and the exact name for identification.</p>
+          </div>
+          <div class="form-grid color-form-grid">
+            <label>
+              <span>Color name <strong aria-hidden="true">*</strong></span>
+              <input id="colorNameInput" name="colorName" required placeholder="e.g. Matte Charcoal" />
+            </label>
+            <label>
+              <span>Color family <strong aria-hidden="true">*</strong></span>
+              <select id="colorFamilyInput" name="colorFamily" required>
+                <option value="Black">Black</option><option value="White">White</option>
+                <option value="Gray">Gray</option><option value="Red">Red</option>
+                <option value="Orange">Orange</option><option value="Yellow">Yellow</option>
+                <option value="Green">Green</option><option value="Blue">Blue</option>
+                <option value="Purple">Purple</option><option value="Pink">Pink</option>
+                <option value="Brown">Brown</option><option value="Beige">Beige</option>
+                <option value="Gold">Gold</option><option value="Silver">Silver</option>
+                <option value="Clear">Clear</option><option value="Natural">Natural</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>
+            <label class="color-picker-label"><span>Swatch</span><input id="colorHexInput" name="colorHex" type="color" value="#777777" /></label>
+            <div class="color-preview" id="colorPreview" aria-label="Selected color preview"></div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-title">
+            <h3>Inventory details</h3>
+            <p>Weight is filament only, not the reusable spool carrier.</p>
+          </div>
+          <div class="form-grid three-column">
+            <label id="quantityField"><span>Quantity to add</span><input id="quantityInput" name="quantity" type="number" min="1" max="100" step="1" value="1" /></label>
+            <label><span>Nominal weight (g) <strong aria-hidden="true">*</strong></span><input id="initialWeightInput" name="initialWeightG" type="number" min="1" max="10000" step="1" value="1000" required /></label>
+            <label><span>Remaining (g) <strong aria-hidden="true">*</strong></span><input id="remainingWeightInput" name="remainingWeightG" type="number" min="0" max="10000" step="1" value="1000" required /></label>
+            <label>
+              <span>Status</span>
+              <select id="statusInput" name="status">
+                <option value="Needs audit">Needs audit</option><option value="Sealed">Sealed</option>
+                <option value="Open">Open</option><option value="Loaded">Loaded</option>
+                <option value="Reserved">Reserved</option><option value="Empty">Empty</option>
+              </select>
+            </label>
+            <label>
+              <span>Packaging</span>
+              <select id="packagingInput" name="packaging">
+                <option value="With spool">With spool</option><option value="Refill">Refill</option>
+                <option value="Sample">Sample</option><option value="Unknown">Unknown</option>
+              </select>
+            </label>
+            <label><span>Reorder at or below (g)</span><input id="reorderInput" name="reorderAtG" type="number" min="0" max="10000" step="1" value="250" /></label>
+            <label class="full-width"><span>Location</span><input id="locationInput" name="location" list="locationSuggestions" placeholder="e.g. Shelf A, AMS 1 Slot 2" value="Unassigned" /></label>
+            <label class="checkbox-row full-width"><input id="verifiedInput" name="verified" type="checkbox" /><span>I physically checked this spool and the remaining amount is current.</span></label>
+            <label class="full-width"><span>Notes</span><textarea id="notesInput" name="notes" rows="3" placeholder="Drying notes, project reservation, nozzle recommendation…"></textarea></label>
+          </div>
+        </div>
+
+        <datalist id="brandSuggestions"></datalist>
+        <datalist id="typeSuggestions"></datalist>
+        <datalist id="materialSuggestions"></datalist>
+        <datalist id="locationSuggestions"></datalist>
+
+        <div class="modal-footer">
+          <button class="button ghost" type="button" data-close-dialog="spoolDialog">Cancel</button>
+          <button class="button primary" id="saveSpoolButton" type="submit">Save spool</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="usageDialog" class="modal small-modal">
+      <form id="usageForm" method="dialog">
+        <div class="modal-header">
+          <div><p class="eyebrow">Usage update</p><h2>Log filament used</h2></div>
+          <button class="icon-button" type="button" data-close-dialog="usageDialog" aria-label="Close">×</button>
+        </div>
+        <input id="usageSpoolId" type="hidden" />
+        <div id="usageSpoolSummary" class="usage-summary"></div>
+        <label><span>Filament used (g)</span><input id="usageAmountInput" type="number" min="1" step="1" required placeholder="e.g. 85" /></label>
+        <label class="checkbox-row"><input id="markOpenInput" type="checkbox" checked /><span>Mark the spool as Open after this update.</span></label>
+        <p class="form-hint" id="usageHint"></p>
+        <div class="modal-footer">
+          <button class="button ghost" type="button" data-close-dialog="usageDialog">Cancel</button>
+          <button class="button primary" type="submit">Record usage</button>
+        </div>
+      </form>
+    </dialog>
+
+    <input id="importFileInput" type="file" accept="application/json,.json" hidden />
+    <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+    <script type="module" src="./src/app.js?v=0.3.2"></script>
+  </body>
+</html>
