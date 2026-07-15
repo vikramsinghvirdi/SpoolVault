@@ -5,8 +5,7 @@
   "type": "module",
   "description": "A dependency-free, local-first inventory manager for 3D-printer filament spools.",
   "scripts": {
-    "dev": "node server.mjs",
-    "start": "node server.mjs",
+    "dev": "node scripts/dev-server.mjs",
     "test": "node --test tests/*.test.mjs"
   }
 }
